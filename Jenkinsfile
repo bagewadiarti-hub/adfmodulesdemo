@@ -64,7 +64,7 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 dir("env/${params.ENV}") {
-                    bat "terraform init -input=false -backend-config=resource_group_name=tf-rg -backend-config=storage_account_name=tfstorageprod177 -backend-config=container_name=tfstate -backend-config=key=adf-${params.ENV}.tfstate"
+                    bat "terraform init -upgrade -input=false -backend-config=resource_group_name=tf-rg -backend-config=storage_account_name=tfstorageprod177 -backend-config=container_name=tfstate -backend-config=key=adf-${params.ENV}.tfstate"
                 }
             }
         }
