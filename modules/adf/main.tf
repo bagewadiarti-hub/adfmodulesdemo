@@ -9,9 +9,69 @@ resource "azurerm_data_factory" "adf" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-resource "azurerm_data_factory_pipeline" "pipeline" {
-  name            = var.pipeline_name
+# -----------------------------
+# HTTP Linked Service (Remote Backend)
+# -----------------------------
+resource "azurerm_data_factory_linked_service_http" "http_ls" {
+  name            = "http-linked-service"
+  data_factory_id = azurerm_data_factory.adf.id
+  url             = "https://jsonplaceholder.typicode.com"
+}
+
+# -----------------------------
+# HTTP Dataset
+# -----------------------------
+resource "azurerm_data_factory_dataset_http" "http_dataset" {
+  name                = "posts-dataset"
+  data_factory_id     = azurerm_data_factory.adf.id
+  linked_service_name = azurerm_data_factory_linked_service_http.http_ls.name
+
+  relative_url = "posts"
+}
+
+# -----------------------------
+# Fetch + Process Pipeline
+# -----------------------------
+resource "azurerm_data_factory_pipeline" "fetch_pipeline" {
+  name            = "fetch-process-pipeline"
   data_factory_id = azurerm_data_factory.adf.id
 
-  activities_json = var.activities_json
+  activities_json = jsonencode([
+    {
+      name = "FetchFromAPI"
+      type = "WebActivity"
+      typeProperties = {
+        url    = "https://jsonplaceholder.typicode.com/posts"
+        method = "GET"
+      }
+    },
+    {
+      name = "ProcessingStep"
+      type = "Wait"
+      dependsOn = [
+        {
+          activity = "FetchFromAPI"
+          dependencyConditions = ["Succeeded"]
+        }
+      ]
+      typeProperties = {
+        waitTimeInSeconds = 15
+      }
+    }
+  ])
+}
+
+# -----------------------------
+# 5 Minute Trigger
+# -----------------------------
+resource "azurerm_data_factory_trigger_schedule" "five_min_trigger" {
+  name            = "every-5-min-trigger"
+  data_factory_id = azurerm_data_factory.adf.id
+
+  frequency = "Minute"
+  interval  = 5
+
+  pipeline {
+    name = azurerm_data_factory_pipeline.fetch_pipeline.name
+  }
 }
