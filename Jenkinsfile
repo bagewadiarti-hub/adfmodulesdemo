@@ -21,6 +21,22 @@ pipeline {
 
     stages {
 
+        stage('Terraform Format Check') {
+    steps {
+        dir("env/${params.ENV}") {
+            bat "terraform fmt -check -recursive"
+        }
+    }
+}
+
+stage('Terraform Validate') {
+    steps {
+        dir("env/${params.ENV}") {
+            bat "terraform validate"
+        }
+    }
+}
+
         stage('Terraform Init') {
             steps {
                 dir("env/${params.ENV}") {
@@ -29,14 +45,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Validate') {
-            steps {
-                dir("env/${params.ENV}") {
-                    bat 'terraform validate'
-                }
-            }
-        }
-
+  
         stage('Terraform Plan') {
             steps {
                 dir("env/${params.ENV}") {
