@@ -10,16 +10,14 @@ resource "azurerm_data_factory" "adf" {
 }
 
 # ---------------------------------
-# HTTP Linked Service (v4 Compatible)
+# HTTP Linked Service (FIXED)
 # ---------------------------------
-resource "azurerm_data_factory_linked_service_custom" "http_ls" {
+resource "azurerm_data_factory_linked_service_http" "http_ls" {
   name            = "http-linked-service"
   data_factory_id = azurerm_data_factory.adf.id
-  type            = "HttpServer"
+  url             = "https://jsonplaceholder.typicode.com"
 
-  type_properties_json = jsonencode({
-    url = "https://jsonplaceholder.typicode.com"
-  })
+  authentication_type = "Anonymous"
 }
 
 # ---------------------------------
