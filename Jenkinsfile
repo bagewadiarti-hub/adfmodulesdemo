@@ -20,25 +20,25 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                bat 'terraform init -backend-config="resource_group_name=tf-rg" -backend-config="storage_account_name=tfstorageprod177" -backend-config="container_name=tfstate" -backend-config="key=adf-%ENV%.tfstate"'
-            }
-        }
-
-        stage('Select Workspace') {
-            steps {
-                bat 'terraform workspace select %ENV% || terraform workspace new %ENV%'
+                dir("env/${params.ENV}") {
+                    bat 'terraform init -backend-config="resource_group_name=tf-rg" -backend-config="storage_account_name=tfstorageprod177" -backend-config="container_name=tfstate" -backend-config="key=adf-%ENV%.tfstate"'
+                }
             }
         }
 
         stage('Terraform Validate') {
             steps {
-                bat 'terraform validate'
+                dir("env/${params.ENV}") {
+                    bat 'terraform validate'
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                bat 'terraform plan -out=tfplan'
+                dir("env/${params.ENV}") {
+                    bat 'terraform plan -out=tfplan'
+                }
             }
         }
 
@@ -53,7 +53,9 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                bat 'terraform apply -auto-approve tfplan'
+                dir("env/${params.ENV}") {
+                    bat 'terraform apply -auto-approve tfplan'
+                }
             }
         }
     }
