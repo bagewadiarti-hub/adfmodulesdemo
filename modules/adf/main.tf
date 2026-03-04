@@ -10,9 +10,9 @@ resource "azurerm_data_factory" "adf" {
 }
 
 # ---------------------------------
-# HTTP Linked Service (v3 Compatible)
+# HTTP Linked Service (Correct for v3.117.1)
 # ---------------------------------
-resource "azurerm_data_factory_linked_service_custom" "http_ls" {
+resource "azurerm_data_factory_linked_service" "http_ls" {
   name            = "http-linked-service"
   data_factory_id = azurerm_data_factory.adf.id
   type            = "HttpServer"
