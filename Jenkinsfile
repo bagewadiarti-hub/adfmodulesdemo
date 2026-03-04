@@ -28,31 +28,31 @@ pipeline {
         }
 
         stage('Fetch Secrets from Key Vault') {
-    steps {
-        script {
+            steps {
+                script {
+                    env.ARM_CLIENT_ID = bat(
+                        script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-id --query value -o tsv',
+                        returnStdout: true
+                    ).trim()
 
-            env.ARM_CLIENT_ID = bat(
-                script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-id --query value -o tsv',
-                returnStdout: true
-            ).trim()
+                    env.ARM_CLIENT_SECRET = bat(
+                        script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-secret --query value -o tsv',
+                        returnStdout: true
+                    ).trim()
 
-            env.ARM_CLIENT_SECRET = bat(
-                script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-secret --query value -o tsv',
-                returnStdout: true
-            ).trim()
+                    env.ARM_TENANT_ID = bat(
+                        script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-tenant-id --query value -o tsv',
+                        returnStdout: true
+                    ).trim()
 
-            env.ARM_TENANT_ID = bat(
-                script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-tenant-id --query value -o tsv',
-                returnStdout: true
-            ).trim()
-
-            env.ARM_SUBSCRIPTION_ID = bat(
-                script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-subscription-id --query value -o tsv',
-                returnStdout: true
-            ).trim()
+                    env.ARM_SUBSCRIPTION_ID = bat(
+                        script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-subscription-id --query value -o tsv',
+                        returnStdout: true
+                    ).trim()
+                }
+            }
         }
-    }
-}
+
         stage('Terraform Format Check') {
             steps {
                 dir("env/${params.ENV}") {
@@ -64,7 +64,7 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 dir("env/${params.ENV}") {
-                    bat 'terraform init -backend-config=resource_group_name=tf-rg -backend-config=storage_account_name=tfstorageprod177 -backend-config=container_name=tfstate -backend-config=key=adf-%ENV%.tfstate'
+                    bat "terraform init -input=false -backend-config=resource_group_name=tf-rg -backend-config=storage_account_name=tfstorageprod177 -backend-config=container_name=tfstate -backend-config=key=adf-${params.ENV}.tfstate"
                 }
             }
         }
@@ -80,7 +80,7 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir("env/${params.ENV}") {
-                    bat 'terraform plan -out=tfplan'
+                    bat 'terraform plan -input=false -out=tfplan'
                 }
             }
         }
