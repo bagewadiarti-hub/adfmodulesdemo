@@ -18,9 +18,9 @@ pipeline {
         stage('Azure Login (Bootstrap)') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'azure-sp-client-id', variable: 'SP_CLIENT_ID'),
-                    string(credentialsId: 'azure-sp-client-secret', variable: 'SP_CLIENT_SECRET'),
-                    string(credentialsId: 'azure-sp-tenant-id', variable: 'SP_TENANT_ID')
+                    string(credentialsId: 'azure-client-id', variable: 'SP_CLIENT_ID'),
+                    string(credentialsId: 'azure-client-secret', variable: 'SP_CLIENT_SECRET'),
+                    string(credentialsId: 'azure-tenant-id', variable: 'SP_TENANT_ID')
                 ]) {
                     bat 'az login --service-principal --username %SP_CLIENT_ID% --password %SP_CLIENT_SECRET% --tenant %SP_TENANT_ID%'
                 }
