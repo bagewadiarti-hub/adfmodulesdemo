@@ -20,15 +20,13 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                bat 'terraform init'
+                bat 'terraform init -backend-config="resource_group_name=tf-rg" -backend-config="storage_account_name=tfstorageprod177" -backend-config="container_name=tfstate" -backend-config="key=adf-%ENV%.tfstate"'
             }
         }
 
         stage('Select Workspace') {
             steps {
-                bat """
-                terraform workspace select ${params.ENV} || terraform workspace new ${params.ENV}
-                """
+                bat 'terraform workspace select %ENV% || terraform workspace new %ENV%'
             }
         }
 
@@ -40,7 +38,7 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                bat "terraform plan -out=tfplan"
+                bat 'terraform plan -out=tfplan'
             }
         }
 
