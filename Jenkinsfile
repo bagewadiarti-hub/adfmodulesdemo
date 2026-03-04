@@ -31,22 +31,22 @@ pipeline {
             steps {
                 script {
                     env.ARM_CLIENT_ID = bat(
-                        script: 'az keyvault secret show --vault-name YOUR_KV_NAME --name azure-client-id --query value -o tsv',
+                        script: 'az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-id --query value -o tsv',
                         returnStdout: true
                     ).trim()
 
                     env.ARM_CLIENT_SECRET = bat(
-                        script: 'az keyvault secret show --vault-name YOUR_KV_NAME --name azure-client-secret --query value -o tsv',
+                        script: 'az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-secret --query value -o tsv',
                         returnStdout: true
                     ).trim()
 
                     env.ARM_TENANT_ID = bat(
-                        script: 'az keyvault secret show --vault-name YOUR_KV_NAME --name azure-tenant-id --query value -o tsv',
+                        script: 'az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-tenant-id --query value -o tsv',
                         returnStdout: true
                     ).trim()
 
                     env.ARM_SUBSCRIPTION_ID = bat(
-                        script: 'az keyvault secret show --vault-name YOUR_KV_NAME --name azure-subscription-id --query value -o tsv',
+                        script: 'az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-subscription-id --query value -o tsv',
                         returnStdout: true
                     ).trim()
                 }
