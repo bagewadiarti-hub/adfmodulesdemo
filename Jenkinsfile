@@ -28,31 +28,31 @@ pipeline {
         }
 
         stage('Fetch Secrets from Key Vault') {
-            steps {
-                script {
-                    env.ARM_CLIENT_ID = bat(
-                        script: 'az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-id --query value -o tsv',
-                        returnStdout: true
-                    ).trim()
+    steps {
+        script {
 
-                    env.ARM_CLIENT_SECRET = bat(
-                        script: 'az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-secret --query value -o tsv',
-                        returnStdout: true
-                    ).trim()
+            env.ARM_CLIENT_ID = bat(
+                script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-id --query value -o tsv',
+                returnStdout: true
+            ).trim()
 
-                    env.ARM_TENANT_ID = bat(
-                        script: 'az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-tenant-id --query value -o tsv',
-                        returnStdout: true
-                    ).trim()
+            env.ARM_CLIENT_SECRET = bat(
+                script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-client-secret --query value -o tsv',
+                returnStdout: true
+            ).trim()
 
-                    env.ARM_SUBSCRIPTION_ID = bat(
-                        script: 'az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-subscription-id --query value -o tsv',
-                        returnStdout: true
-                    ).trim()
-                }
-            }
+            env.ARM_TENANT_ID = bat(
+                script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-tenant-id --query value -o tsv',
+                returnStdout: true
+            ).trim()
+
+            env.ARM_SUBSCRIPTION_ID = bat(
+                script: '@az keyvault secret show --vault-name ADFDemoKeyVault177 --name azure-subscription-id --query value -o tsv',
+                returnStdout: true
+            ).trim()
         }
-
+    }
+}
         stage('Terraform Format Check') {
             steps {
                 dir("env/${params.ENV}") {
