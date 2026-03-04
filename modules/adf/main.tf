@@ -9,29 +9,22 @@ resource "azurerm_data_factory" "adf" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-# -----------------------------
-# HTTP Linked Service (Remote Backend)
-# -----------------------------
-resource "azurerm_data_factory_linked_service_http" "http_ls" {
+# ---------------------------------
+# HTTP Linked Service (v4 Compatible)
+# ---------------------------------
+resource "azurerm_data_factory_linked_service_custom" "http_ls" {
   name            = "http-linked-service"
   data_factory_id = azurerm_data_factory.adf.id
-  url             = "https://jsonplaceholder.typicode.com"
+  type            = "HttpServer"
+
+  type_properties_json = jsonencode({
+    url = "https://jsonplaceholder.typicode.com"
+  })
 }
 
-# -----------------------------
-# HTTP Dataset
-# -----------------------------
-resource "azurerm_data_factory_dataset_http" "http_dataset" {
-  name                = "posts-dataset"
-  data_factory_id     = azurerm_data_factory.adf.id
-  linked_service_name = azurerm_data_factory_linked_service_http.http_ls.name
-
-  relative_url = "posts"
-}
-
-# -----------------------------
+# ---------------------------------
 # Fetch + Process Pipeline
-# -----------------------------
+# ---------------------------------
 resource "azurerm_data_factory_pipeline" "fetch_pipeline" {
   name            = "fetch-process-pipeline"
   data_factory_id = azurerm_data_factory.adf.id
@@ -61,9 +54,9 @@ resource "azurerm_data_factory_pipeline" "fetch_pipeline" {
   ])
 }
 
-# -----------------------------
+# ---------------------------------
 # 5 Minute Trigger
-# -----------------------------
+# ---------------------------------
 resource "azurerm_data_factory_trigger_schedule" "five_min_trigger" {
   name            = "every-5-min-trigger"
   data_factory_id = azurerm_data_factory.adf.id
