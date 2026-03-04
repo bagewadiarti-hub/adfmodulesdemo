@@ -1,5 +1,6 @@
 pipeline {
     agent any
+
     tools {
         terraform 'terraform'
     }
@@ -12,40 +13,70 @@ pipeline {
         )
     }
 
-    environment {
-        ARM_CLIENT_ID       = credentials('azure-client-id')
-        ARM_CLIENT_SECRET   = credentials('azure-client-secret')
-        ARM_SUBSCRIPTION_ID = credentials('azure-subscription-id')
-        ARM_TENANT_ID       = credentials('azure-tenant-id')
-    }
-
     stages {
 
-        stage('Terraform Format Check') {
-    steps {
-        dir("env/${params.ENV}") {
-            bat "terraform fmt -check -recursive"
-        }
-    }
-}
-
-stage('Terraform Validate') {
-    steps {
-        dir("env/${params.ENV}") {
-            bat "terraform validate"
-        }
-    }
-}
-
-        stage('Terraform Init') {
+        stage('Azure Login (Bootstrap)') {
             steps {
-                dir("env/${params.ENV}") {
-                    bat 'terraform init -backend-config="resource_group_name=tf-rg" -backend-config="storage_account_name=tfstorageprod177" -backend-config="container_name=tfstate" -backend-config="key=adf-%ENV%.tfstate"'
+                withCredentials([
+                    string(credentialsId: 'azure-sp-client-id', variable: 'SP_CLIENT_ID'),
+                    string(credentialsId: 'azure-sp-client-secret', variable: 'SP_CLIENT_SECRET'),
+                    string(credentialsId: 'azure-sp-tenant-id', variable: 'SP_TENANT_ID')
+                ]) {
+                    bat 'az login --service-principal --username %SP_CLIENT_ID% --password %SP_CLIENT_SECRET% --tenant %SP_TENANT_ID%'
                 }
             }
         }
 
-  
+        stage('Fetch Secrets from Key Vault') {
+            steps {
+                script {
+                    env.ARM_CLIENT_ID = bat(
+                        script: 'az keyvault secret show --vault-name YOUR_KV_NAME --name azure-client-id --query value -o tsv',
+                        returnStdout: true
+                    ).trim()
+
+                    env.ARM_CLIENT_SECRET = bat(
+                        script: 'az keyvault secret show --vault-name YOUR_KV_NAME --name azure-client-secret --query value -o tsv',
+                        returnStdout: true
+                    ).trim()
+
+                    env.ARM_TENANT_ID = bat(
+                        script: 'az keyvault secret show --vault-name YOUR_KV_NAME --name azure-tenant-id --query value -o tsv',
+                        returnStdout: true
+                    ).trim()
+
+                    env.ARM_SUBSCRIPTION_ID = bat(
+                        script: 'az keyvault secret show --vault-name YOUR_KV_NAME --name azure-subscription-id --query value -o tsv',
+                        returnStdout: true
+                    ).trim()
+                }
+            }
+        }
+
+        stage('Terraform Format Check') {
+            steps {
+                dir("env/${params.ENV}") {
+                    bat 'terraform fmt -check -recursive'
+                }
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                dir("env/${params.ENV}") {
+                    bat 'terraform validate'
+                }
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir("env/${params.ENV}") {
+                    bat 'terraform init -backend-config=resource_group_name=tf-rg -backend-config=storage_account_name=tfstorageprod177 -backend-config=container_name=tfstate -backend-config=key=adf-%ENV%.tfstate'
+                }
+            }
+        }
+
         stage('Terraform Plan') {
             steps {
                 dir("env/${params.ENV}") {
