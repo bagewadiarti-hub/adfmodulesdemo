@@ -10,12 +10,13 @@ resource "azurerm_data_factory" "adf" {
 }
 
 # ---------------------------------
-# HTTP Linked Service (v3 Correct)
+# HTTP Linked Service (v3 Correct - Final)
 # ---------------------------------
 resource "azurerm_data_factory_linked_service_web" "http_ls" {
-  name            = "http-linked-service"
-  data_factory_id = azurerm_data_factory.adf.id
-  url             = "https://jsonplaceholder.typicode.com"
+  name                = "http-linked-service"
+  data_factory_id     = azurerm_data_factory.adf.id
+  url                 = "https://jsonplaceholder.typicode.com"
+  authentication_type = "Anonymous"
 }
 
 # ---------------------------------
